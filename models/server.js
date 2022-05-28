@@ -11,6 +11,10 @@ class Server {
         this.app=express();
         //hago visible el puerto que se encuentra en .env
         this.port = process.env.PORT;
+        //implementamos socket.io con express
+        this.server = require('http').createServer(this.app);
+        // creo propiedad... esta me permite enviar mensajes a todos los usuarios
+        this.io = require('socket.io')(this.server);
 
         
         this.paths = {
@@ -19,6 +23,10 @@ class Server {
         this.middlewares();
         //invoco metodos que configura las rutas de la aplicacion
         this.routes();
+
+
+        // configuracion de sockets
+        this.sockets();
     }
 
     //metodo de middlewares
@@ -36,9 +44,20 @@ class Server {
     routes(){
         
     }
+    sockets(){
+        this.io.on('connection', socket => {
+            console.log('cliente conectado', socket.id);
+
+            socket.on('disconnect',()=>{
+                console.log('Cliente desconectado',socket.id)
+            });
+
+        });
+    }
+
     //metodo para escuchar el servidor e imprime el puerto
     listen(){
-        this.app.listen(this.port,()=>{
+        this.server.listen(this.port,()=>{
             console.log('Servidor en Puerto',this.port);
         })
     }
